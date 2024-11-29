@@ -1,0 +1,2 @@
+# HexGame
+IA Hex Player
