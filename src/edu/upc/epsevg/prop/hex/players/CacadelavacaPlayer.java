@@ -1,9 +1,10 @@
 package edu.upc.epsevg.prop.hex.players;
 
 import edu.upc.epsevg.prop.hex.*;
-import static edu.upc.epsevg.prop.hex.PlayerType.*;
 
 import java.awt.Point;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
 public class CacadelavacaPlayer implements IPlayer, IAuto {
 
@@ -25,6 +26,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
     @Override
     public PlayerMove move(HexGameStatus s) {
         heuristicasCalculadas = 0;
+        PlayerType player = s.getCurrentPlayer();
         int profunditat = 1;
         Point millorMoviment =  null;
         int alpha = menys_infinit;
@@ -33,7 +35,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                 if (millorMoviment == null) millorMoviment = move.getPoint();
                 HexGameStatus copiaStatus = new HexGameStatus(s);  
                 copiaStatus.placeStone(move.getPoint()); 
-                if (copiaStatus.isGameOver() && copiaStatus.GetWinner() == s.getCurrentPlayer()) {  
+                if (copiaStatus.isGameOver()) {  
                     return new PlayerMove(move.getPoint(), heuristicasCalculadas, profunditat, SearchType.MINIMAX_IDS);  
                 }
                 int valor = MinValor(copiaStatus, profunditat, menys_infinit, mes_infinit);  
@@ -56,7 +58,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
         for(MoveNode move : s.getMoves()) {
             HexGameStatus copiaStatus = new HexGameStatus(s);  
             copiaStatus.placeStone(move.getPoint()); 
-            if (copiaStatus.isGameOver() && copiaStatus.GetWinner() == s.getCurrentPlayer()) {  
+            if (copiaStatus.isGameOver()) {  
                 return menys_infinit; 
             }
             valor = Math.min(valor, MaxValor(copiaStatus, profunditat - 1, alfa, beta));
@@ -73,24 +75,23 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
         for(MoveNode move : s.getMoves()) {
             HexGameStatus copiaStatus = new HexGameStatus(s);  
             copiaStatus.placeStone(move.getPoint()); 
-            if (copiaStatus.isGameOver() && copiaStatus.GetWinner() == s.getCurrentPlayer()) {  
+            if (copiaStatus.isGameOver()) {  
                 return mes_infinit; 
             }
             valor = Math.max(valor, MinValor(copiaStatus, profunditat - 1, alfa, beta));
-                if (valor >= beta) return valor;  
-                alfa = Math.max(valor, alfa);
+            if (valor >= beta) return valor;  
+            alfa = Math.max(valor, alfa);
         }
         return valor;
     }
     
     private int heuristica(HexGameStatus s) {
-       heuristicasCalculadas++;
-       return 0;
+        heuristicasCalculadas++;
+        return 0;
     }
-
+    
     @Override
     public String getName() {
         return nom;
     }
 }
-                   
