@@ -1,2 +1,2 @@
 # HexGame
-IA Hex Player
+IA Hex Player in Java
