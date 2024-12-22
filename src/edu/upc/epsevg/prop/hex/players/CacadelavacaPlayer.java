@@ -1,6 +1,7 @@
 package edu.upc.epsevg.prop.hex.players;
 
 import edu.upc.epsevg.prop.hex.*;
+import static edu.upc.epsevg.prop.hex.PlayerType.*;
 
 import java.awt.Point;
 import java.util.Comparator;
@@ -10,6 +11,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
 
     private final String nom;
     private boolean timeOut = false; 
+    private PlayerType jugadorActual = null;
     private final int mes_infinit = Integer.MAX_VALUE;
     private final int menys_infinit = Integer.MIN_VALUE;
     private long heuristicasCalculadas = 0;
@@ -26,7 +28,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
     @Override
     public PlayerMove move(HexGameStatus s) {
         heuristicasCalculadas = 0;
-        PlayerType player = s.getCurrentPlayer();
+        jugadorActual = s.getCurrentPlayer();
         int profunditat = 1;
         Point millorMoviment =  null;
         int alpha = menys_infinit;
@@ -87,6 +89,12 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
     
     private int heuristica(HexGameStatus s) {
         heuristicasCalculadas++;
+        int puntuacioActual = dijkstra(s, jugadorActual);
+        int puntuacioRival = dijkstra(s, opposite(jugadorActual));
+        return (mes_infinit - puntuacioActual)- (mes_infinit - puntuacioRival);
+    }
+    
+    private int dijkstra(HexGameStatus s, PlayerType player) {
         return 0;
     }
     
