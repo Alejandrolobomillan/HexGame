@@ -4,6 +4,7 @@ import edu.upc.epsevg.prop.hex.*;
 import static edu.upc.epsevg.prop.hex.PlayerType.*;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
@@ -103,24 +104,81 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
     private int dijkstra(HexGameStatus s, PlayerType player) {
         int n = s.getSize();
         int[][] distancies = new int[n][n];
-        //PriorityQueue<Point> cola = new PriorityQueue<>(Comparator.comparingInt(p -> p.distance));
+        PriorityQueue<Node> cola = new PriorityQueue<>(Comparator.comparingInt(node -> node.distancia));
         if (player == PLAYER1) {
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < n; j++) {
-                    if(s.getPos(n,n) == colorRival) {
-                        distancies[n][n] = mes_infinit;
+                    if(s.getPos(1,j) == colorRival) {
+                        distancies[i][j] = menys_infinit;
                     } else if (i == 1 && j == 1 || j == 2 || j == 3 || j == 4 || j == 5){
+                        distancies[i][j] = 0;
+                        cola.add(new Node(new Point(i, j), 0));
+                    } else {
+                        distancies[i][j] = mes_infinit;
+                    }
+                }
+            }
+            while (!cola.isEmpty()) {
+                Node actual = cola.poll();
+                Point puntActual = actual.punt;
+                if(puntActual.x == n - 1){
+                    return actual.distancia;
+                }
+                
+                ArrayList<Point> veins = s.getNeigh(puntActual);
+
+                for (Point vei : veins) {
+                    int nouCost = actual.distancia + 1; 
+
+                    if (nouCost < distancies[vei.x][vei.y]) {
+                        distancies[vei.x][vei.y] = nouCost;
+                        cola.add(new Node(new Point(vei.x, vei.y), nouCost));
+                    }
+                }
+            }        
+        } else {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    if(s.getPos(i,j) == colorRival) {
+                        distancies[i][j] = mes_infinit;
+                    } else if (j == 1 && i == 1 || i == 2 || i == 3 || i == 4 || i == 5){
                         distancies[n][n] = 0;
+                        cola.add(new Node(new Point(i, j), 0));
                     } else {
                         distancies[n][n] = 1;
                     }
                 }
             }
-            
-        } else {
-            
+            while (!cola.isEmpty()) {
+                Node actual = cola.poll();
+                Point puntActual = actual.punt;
+                if(puntActual.y == n - 1){
+                    return actual.distancia;
+                }
+                
+                ArrayList<Point> veins = s.getNeigh(puntActual);
+
+                for (Point vei : veins) {
+                    int nouCost = actual.distancia + 1; 
+
+                    if (nouCost < distancies[vei.x][vei.y]) {
+                        distancies[vei.x][vei.y] = nouCost;
+                        cola.add(new Node(new Point(vei.x, vei.y), nouCost));
+                    }
+                }
+            }        
         }
-        return 0;
+        return mes_infinit;
+    }
+    
+    private static class Node {
+        Point punt;
+        int distancia;
+
+        public Node(Point punt, int distancia) {
+            this.punt = punt;
+            this.distancia = distancia;
+        }
     }
     
     @Override
