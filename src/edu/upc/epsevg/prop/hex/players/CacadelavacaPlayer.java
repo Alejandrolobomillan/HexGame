@@ -33,7 +33,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
         heuristicasCalculadas = 0;
         jugadorActual = s.getCurrentPlayer();
         colorActual = getColor(jugadorActual);
-        jugadorRival = s.getCurrentPlayer();
+        jugadorRival = opposite(jugadorActual);
         colorRival = getColor(jugadorRival);
         int profunditat = 1;
         Point millorMoviment =  null;
