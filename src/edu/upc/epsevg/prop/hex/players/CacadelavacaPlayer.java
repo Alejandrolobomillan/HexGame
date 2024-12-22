@@ -96,7 +96,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
     private int heuristica(HexGameStatus s) {
         heuristicasCalculadas++;
         int puntuacioActual = dijkstra(s, jugadorActual);
-        int puntuacioRival = dijkstra(s, opposite(jugadorActual));
+        int puntuacioRival = dijkstra(s, jugadorRival);
         return (mes_infinit - puntuacioActual)- (mes_infinit - puntuacioRival);
     }
     
