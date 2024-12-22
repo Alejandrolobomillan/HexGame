@@ -12,6 +12,9 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
     private final String nom;
     private boolean timeOut = false; 
     private PlayerType jugadorActual = null;
+    private int colorActual = -2;
+    private PlayerType jugadorRival = null;
+    private int colorRival = -2;
     private final int mes_infinit = Integer.MAX_VALUE;
     private final int menys_infinit = Integer.MIN_VALUE;
     private long heuristicasCalculadas = 0;
@@ -29,6 +32,9 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
     public PlayerMove move(HexGameStatus s) {
         heuristicasCalculadas = 0;
         jugadorActual = s.getCurrentPlayer();
+        colorActual = getColor(jugadorActual);
+        jugadorRival = s.getCurrentPlayer();
+        colorRival = getColor(jugadorRival);
         int profunditat = 1;
         Point millorMoviment =  null;
         int alpha = menys_infinit;
@@ -95,6 +101,25 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
     }
     
     private int dijkstra(HexGameStatus s, PlayerType player) {
+        int n = s.getSize();
+        int[][] distancies = new int[n][n];
+        //PriorityQueue<Point> cola = new PriorityQueue<>(Comparator.comparingInt(p -> p.distance));
+        if (player == PLAYER1) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    if(s.getPos(n,n) == colorRival) {
+                        distancies[n][n] = mes_infinit;
+                    } else if (i == 1 && j == 1 || j == 2 || j == 3 || j == 4 || j == 5){
+                        distancies[n][n] = 0;
+                    } else {
+                        distancies[n][n] = 1;
+                    }
+                }
+            }
+            
+        } else {
+            
+        }
         return 0;
     }
     
