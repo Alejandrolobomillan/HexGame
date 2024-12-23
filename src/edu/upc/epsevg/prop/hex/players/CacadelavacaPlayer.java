@@ -58,7 +58,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                     millorMoviment = move.getPoint(); 
                 }
             }
-            profunditat++;
+            //profunditat++;
         }
         if(timeOut) timeout();
         return new PlayerMove(millorMoviment, heuristicasCalculadas, profunditat, SearchType.MINIMAX_IDS);
@@ -100,125 +100,76 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
     
     private int heuristica(HexGameStatus s) {
         heuristicasCalculadas++;
-        int puntuacioActual = dijkstra2(s, jugadorActual,new Point(0, 0),new Point(4, 4));
-        int puntuacioRival = dijkstra2(s, jugadorRival,new Point(0, 0),new Point(4, 1));
+        int puntuacioActual = dijkstra(s, jugadorActual,new Point(0, 0),new Point(4, 0));
+        int puntuacioRival = dijkstra(s, jugadorRival,new Point(0, 0),new Point(4, 0));
         return (mes_infinit - puntuacioActual) - (mes_infinit - puntuacioRival);
         //return puntuacioActual - puntuacioRival;
     }
     
     
- private int dijkstra(HexGameStatus s, PlayerType player) {
+ private int dijkstra(HexGameStatus s, PlayerType player, Point start, Point end) {
         int n = s.getSize();
-        int[][] distancias = new int[n][n];
+        Node[][] distancias = new Node[n][n];
         PriorityQueue<Node> cola = new PriorityQueue<>(Comparator.comparingInt(node -> node.distancia));
-        boolean[][] visitado = new boolean[n][n];
-
-        // Inicializar distancias y cola
+        Set<Node> visited = new HashSet<>();
+        
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if (s.getPos(i, j) == colorRival) {
-                    distancias[i][j] = mes_infinit; // Fichas del rival
-                } else if (s.getPos(i, j) == colorActual) {
-                    distancias[i][j] = 0; // Fichas propias
-                    if ((player == PLAYER1 && i == 0) || (player == PLAYER2 && j == 0)) {
-                        cola.add(new Node(new Point(i, j), 0)); // Bordes iniciales
-                    }
+                Point p = new Point(i, j);
+                if (s.getPos(i, j) == colorActual) {
+                    distancias[i][j] = (new Node(p, 0));
                 } else {
-                    distancias[i][j] = 1; // Celdas vacías
+                    distancias[i][j] = (new Node(p, mes_infinit));
                 }
             }
         }
+        
+        distancias[start.x][start.y] = new Node(start, 0); 
+        cola.add(distancias[start.x][start.y]);
 
-        // Dijkstra
         while (!cola.isEmpty()) {
-            Node actual = cola.poll();
-            System.out.println(actual.punt.x + actual.punt.y + actual.distancia);
-            Point p = actual.punt;
-            if (visitado[p.x][p.y]) continue;
-            visitado[p.x][p.y] = true;
+            Node current = cola.poll();
+            Point p = current.punt;
 
-            // Verificar si alcanzamos el borde opuesto
-            if ((player == PLAYER1 && p.x == n - 1) || (player == PLAYER2 && p.y == n - 1)) {
-                return actual.distancia;
+            if (visited.contains(current)) {
+                continue;
+            }
+
+            visited.add(current);
+
+            // Imprimir nodo actual y su distancia
+            System.out.println("Procesando nodo: " + p + " con distancia: " + current.distancia);
+
+            // Verificar si hemos llegado al nodo final
+            if (p.equals(end)) {
+                System.out.println("Nodo final alcanzado: " + end + " con distancia: " + current.distancia);
+                return current.distancia;
             }
 
             // Explorar vecinos
-            for (Point vecino : s.getNeigh(p)) {
-                if (!visitado[vecino.x][vecino.y]) {
-                    int nuevoCosto = actual.distancia + distancias[vecino.x][vecino.y];
-                    if (nuevoCosto < distancias[vecino.x][vecino.y]) {
-                        distancias[vecino.x][vecino.y] = nuevoCosto;
-                        cola.add(new Node(vecino, nuevoCosto));
+            System.out.println("Vecinos de " + p + ":");
+            for (Point neighbor : s.getNeigh(p)) {
+                if(s.getPos(neighbor.x, neighbor.y) != colorRival) {
+                        System.out.println("  Vecino: " + neighbor + " (distancia actual: " + distancias[neighbor.x][neighbor.y].distancia + ")");
+                    if (!visited.contains(distancias[neighbor.x][neighbor.y])) {
+                        int newDist = distancias[p.x][p.y].distancia + 1;
+                        if (newDist < distancias[neighbor.x][neighbor.y].distancia) {
+                            distancias[neighbor.x][neighbor.y].distancia = newDist;
+                            cola.add(new Node(neighbor, newDist));
+                        }
                     }
                 }
+            }
+
+            // Imprimir cola después de agregar vecinos
+            System.out.println("Cola actual:");
+            for (Node node : cola) {
+                System.out.println("  Nodo en cola: " + node.punt + " con distancia: " + node.distancia);
             }
         }
 
         return mes_infinit; // No se puede conectar
     }
-
-    
- 
- private int dijkstra2(HexGameStatus s, PlayerType player, Point start, Point end){
-    Map<Point, Integer> distances;
-    Set<Point> visited;
-    PriorityQueue<Node> queue;
-    int n = s.getSize();
-    
-    distances = new HashMap<>();
-    visited = new HashSet<>();
-    queue = new PriorityQueue<>((a, b) -> a.distancia - b.distancia);
-
-        // Inicializar distancias y cola
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                Point p = new Point(i, j);
-                if (s.getPos(i, j) == colorRival) {
-                    distances.put(p, mes_infinit); // ficha rival
-                } else if (s.getPos(i, j) == colorActual) {
-                    distances.put(p, 0); // mis fichas
-                } else {
-                    distances.put(p, 1);
-                }
-            }
-        }
-        // Set start distance
-        distances.put(start, 0);
-        queue.add(new Node(start, 0));
-
-        while (!queue.isEmpty()) {
-            Node current = queue.poll();
-            Point p = current.punt;
-
-            if (visited.contains(p)) {
-                continue;
-            }
-
-            visited.add(p);
-
-            if (p.equals(end)) {
-                return distances.get(end);
-            }
-
-            // Explore neighbors -- 
-            for (Point neighbor : s.getNeigh(p)) {
-                if (!visited.contains(neighbor)){
-                    int newDist = distances.get(p) + distances.get(neighbor);
-                    if (newDist < distances.get(neighbor)) {
-                        distances.put(neighbor, newDist);
-                        queue.add(new Node(neighbor, newDist));
-                    }
-                }
-            }
-
-        }
-        return mes_infinit;
-    }
- 
- 
- 
- 
- 
  
     private static class Node {
         Point punt;

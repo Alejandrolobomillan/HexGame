@@ -32,7 +32,7 @@ public class Game {
                 
                 IPlayer player3 = new CacadelavacaPlayer("caca");
                                 
-                new Board(player3, player2, 5 /*mida*/,  10/*s*/, false);
+                new Board(player3, player1, 5 /*mida*/,  10/*s*/, false);
              }
         });
     }
