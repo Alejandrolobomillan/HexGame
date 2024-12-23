@@ -4,11 +4,8 @@ import edu.upc.epsevg.prop.hex.*;
 import static edu.upc.epsevg.prop.hex.PlayerType.*;
 
 import java.awt.Point;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 
@@ -17,9 +14,6 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
     private final String nom;
     private boolean timeOut = false; 
     private PlayerType jugadorActual = null;
-    private int colorActual = -2;
-    private PlayerType jugadorRival = null;
-    private int colorRival = -2;
     private final int mes_infinit = Integer.MAX_VALUE;
     private final int menys_infinit = Integer.MIN_VALUE;
     private long heuristicasCalculadas = 0;
@@ -37,9 +31,6 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
     public PlayerMove move(HexGameStatus s) {
         heuristicasCalculadas = 0;
         jugadorActual = s.getCurrentPlayer();
-        colorActual = getColor(jugadorActual);
-        jugadorRival = opposite(jugadorActual);
-        colorRival = getColor(jugadorRival);
         int profunditat = 1;
         Point millorMoviment =  null;
         int alpha = menys_infinit;
@@ -58,7 +49,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                     millorMoviment = move.getPoint(); 
                 }
             }
-            //profunditat++;
+            profunditat++;
         }
         if(timeOut) timeout();
         return new PlayerMove(millorMoviment, heuristicasCalculadas, profunditat, SearchType.MINIMAX_IDS);
@@ -100,14 +91,14 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
     
     private int heuristica(HexGameStatus s) {
         heuristicasCalculadas++;
-        int puntuacioActual = dijkstra(s, jugadorActual,new Point(0, 0),new Point(4, 0));
-        int puntuacioRival = dijkstra(s, jugadorRival,new Point(0, 0),new Point(4, 0));
-        return (mes_infinit - puntuacioActual) - (mes_infinit - puntuacioRival);
-        //return puntuacioActual - puntuacioRival;
+        int puntuacioActual = dijkstra(s, jugadorActual);
+        //int puntuacioRival = dijkstra(s, jugadorRival);
+        System.out.println(puntuacioActual);
+        return puntuacioActual;
     }
     
     
- private int dijkstra(HexGameStatus s, PlayerType player, Point start, Point end) {
+    public static int dijkstra(HexGameStatus s, PlayerType player) {
         int n = s.getSize();
         Node[][] distancias = new Node[n][n];
         PriorityQueue<Node> cola = new PriorityQueue<>(Comparator.comparingInt(node -> node.distancia));
@@ -116,59 +107,106 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 Point p = new Point(i, j);
-                if (s.getPos(i, j) == colorActual) {
-                    distancias[i][j] = (new Node(p, 0));
-                } else {
-                    distancias[i][j] = (new Node(p, mes_infinit));
-                }
+                distancias[i][j] = (new Node(p, Integer.MAX_VALUE));      
             }
         }
         
-        distancias[start.x][start.y] = new Node(start, 0); 
-        cola.add(distancias[start.x][start.y]);
-
-        while (!cola.isEmpty()) {
-            Node current = cola.poll();
-            Point p = current.punt;
-
-            if (visited.contains(current)) {
-                continue;
+        if(player == PLAYER1) {
+            int colorActual = getColor(player);
+            int colorRival = getColor(opposite(player));
+            for (int j = 0; j < n; j++) {
+                Point p = new Point(0, j);
+                if(s.getPos(0, j) == colorActual) {
+                    distancias[0][j] = (new Node(p, 0));
+                    cola.add(distancias[0][j]);
+                } else if(s.getPos(0, j) == colorRival) {
+                    distancias[0][j] = (new Node(p, Integer.MAX_VALUE)); 
+                } else {
+                    distancias[0][j] = (new Node(p, 1));
+                    cola.add(distancias[0][j]);
+                }
             }
+       
+            while (!cola.isEmpty()) {
+                Node current = cola.poll();
+                Point p = current.punt;
 
-            visited.add(current);
+                if (visited.contains(current)) {
+                    continue;
+                }
 
-            // Imprimir nodo actual y su distancia
-            System.out.println("Procesando nodo: " + p + " con distancia: " + current.distancia);
+                visited.add(current);
 
-            // Verificar si hemos llegado al nodo final
-            if (p.equals(end)) {
-                System.out.println("Nodo final alcanzado: " + end + " con distancia: " + current.distancia);
-                return current.distancia;
-            }
+                if (p.x == n-1) {
+                    return current.distancia;
+                }
 
-            // Explorar vecinos
-            System.out.println("Vecinos de " + p + ":");
-            for (Point neighbor : s.getNeigh(p)) {
-                if(s.getPos(neighbor.x, neighbor.y) != colorRival) {
-                        System.out.println("  Vecino: " + neighbor + " (distancia actual: " + distancias[neighbor.x][neighbor.y].distancia + ")");
-                    if (!visited.contains(distancias[neighbor.x][neighbor.y])) {
-                        int newDist = distancias[p.x][p.y].distancia + 1;
-                        if (newDist < distancias[neighbor.x][neighbor.y].distancia) {
-                            distancias[neighbor.x][neighbor.y].distancia = newDist;
-                            cola.add(new Node(neighbor, newDist));
+                for (Point neighbor : s.getNeigh(p)) {
+                    if(s.getPos(neighbor.x, neighbor.y) != colorRival) {
+                        if (!visited.contains(distancias[neighbor.x][neighbor.y])) {
+                            int newDist = 0;
+                            if(s.getPos(neighbor.x, neighbor.y) == colorActual) {
+                                newDist = distancias[p.x][p.y].distancia;
+                            } else {
+                                newDist = distancias[p.x][p.y].distancia + 1;
+                            }
+                            if (newDist < distancias[neighbor.x][neighbor.y].distancia) {
+                                distancias[neighbor.x][neighbor.y].distancia = newDist;
+                                cola.add(new Node(neighbor, newDist));
+                            }
                         }
                     }
                 }
+            }           
+        } else {
+            int colorActual = getColor(player);
+            int colorRival = getColor(opposite(player));
+            for (int i = 0; i < n; i++) {
+                Point p = new Point(i, 0);
+                if(s.getPos(i, 0) == colorActual) {
+                    distancias[i][0] = (new Node(p, 0));
+                    cola.add(distancias[i][0]);
+                } else if(s.getPos(1, 0) == colorRival) {
+                    distancias[i][0] = (new Node(p, Integer.MAX_VALUE)); 
+                } else {
+                    distancias[i][0] = (new Node(p, 1));
+                    cola.add(distancias[i][0]);
+                }
             }
 
-            // Imprimir cola después de agregar vecinos
-            System.out.println("Cola actual:");
-            for (Node node : cola) {
-                System.out.println("  Nodo en cola: " + node.punt + " con distancia: " + node.distancia);
-            }
+            while (!cola.isEmpty()) {
+                Node current = cola.poll();
+                Point p = current.punt;
+
+                if (visited.contains(current)) {
+                    continue;
+                }
+
+                visited.add(current);
+
+                if (p.y == n-1) {
+                    return current.distancia;
+                }
+
+                for (Point neighbor : s.getNeigh(p)) {
+                    if(s.getPos(neighbor.x, neighbor.y) != colorRival) {
+                        if (!visited.contains(distancias[neighbor.x][neighbor.y])) {
+                            int newDist = 0;
+                            if(s.getPos(neighbor.x, neighbor.y) == colorActual) {
+                                newDist = distancias[p.x][p.y].distancia;
+                            } else {
+                                newDist = distancias[p.x][p.y].distancia + 1;
+                            }
+                            if (newDist < distancias[neighbor.x][neighbor.y].distancia) {
+                                distancias[neighbor.x][neighbor.y].distancia = newDist;
+                                cola.add(new Node(neighbor, newDist));
+                            }
+                        }
+                    }
+                }
+            }   
         }
-
-        return mes_infinit; // No se puede conectar
+        return Integer.MAX_VALUE; 
     }
  
     private static class Node {
@@ -185,4 +223,5 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
     public String getName() {
         return nom;
     }
+    
 }
