@@ -4,8 +4,10 @@ import edu.upc.epsevg.prop.hex.*;
 import static edu.upc.epsevg.prop.hex.PlayerType.*;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 
@@ -108,15 +110,45 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
             for (int j = 0; j < n; j++) {
                 Point p = new Point(i, j);
                 distancias[i][j] = (new Node(p, Integer.MAX_VALUE));      
+                int ii = i+1;
+                int jj = j-2;
+                Point pont = new Point(ii, jj);
+                List<Point> nouPonts = new ArrayList<>();
+                if((ii >= 0 && ii < n) && (jj >= 0 && jj < n)) {
+                    nouPonts.add(pont);
+                }
+                ii = i+2;
+                jj = j-1;
+                if((ii >= 0 && ii < n) && (jj >= 0 && jj < n)) {
+                    nouPonts.add(pont);
+                }
+                ii = i+1;
+                jj = j+1;
+                if((ii >= 0 && ii < n) && (jj >= 0 && jj < n)) {
+                    nouPonts.add(pont);
+                }
+                ii = i-1;
+                jj = j-2;
+                if((ii >= 0 && ii < n) && (jj >= 0 && jj < n)) {
+                    nouPonts.add(pont);
+                }
+                ii = i-2;
+                jj = j+1;
+                if((ii >= 0 && ii < n) && (jj >= 0 && jj < n)) {
+                    nouPonts.add(pont);
+                }
+                ii = i-1;
+                jj = j-1;
+                if((ii >= 0 && ii < n) && (jj >= 0 && jj < n)) {
+                    nouPonts.add(pont);
+                }
+                distancias[i][j].setPonts(nouPonts);
             }
         }
         
         if(player == PLAYER1) {
             int colorActual = getColor(player);
             int colorRival = getColor(opposite(player));
-            System.out.println(player);
-            System.out.println(colorActual);
-            System.out.println(colorRival);
             for (int j = 0; j < n; j++) {
                 Point p = new Point(0, j);
                 if(s.getPos(0, j) == colorActual) {
@@ -164,9 +196,6 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
         } else {
             int colorActual = getColor(player);
             int colorRival = getColor(opposite(player));
-            System.out.println(player);
-            System.out.println(colorActual);
-            System.out.println(colorRival);
             for (int i = 0; i < n; i++) {
                 Point p = new Point(i, 0);
                 if(s.getPos(i, 0) == colorActual) {
@@ -218,11 +247,17 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
     private static class Node {
         Point punt;
         int distancia;
+        List<Point> ponts;
 
         public Node(Point punt, int distancia) {
             this.punt = punt;
             this.distancia = distancia;
         }
+        
+        public void setPonts(List<Point> ponts) {
+            this.ponts = new ArrayList<>(ponts); 
+        }
+
     }
     
     @Override
