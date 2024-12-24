@@ -92,9 +92,9 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
     private int heuristica(HexGameStatus s) {
         heuristicasCalculadas++;
         int puntuacioActual = dijkstra(s, jugadorActual);
-        //int puntuacioRival = dijkstra(s, jugadorRival);
+        int puntuacioRival = dijkstra(s, opposite(jugadorActual));
         System.out.println(puntuacioActual);
-        return puntuacioActual;
+        return (mes_infinit - puntuacioActual) - (mes_infinit - puntuacioRival);
     }
     
     
@@ -114,6 +114,9 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
         if(player == PLAYER1) {
             int colorActual = getColor(player);
             int colorRival = getColor(opposite(player));
+            System.out.println(player);
+            System.out.println(colorActual);
+            System.out.println(colorRival);
             for (int j = 0; j < n; j++) {
                 Point p = new Point(0, j);
                 if(s.getPos(0, j) == colorActual) {
@@ -161,6 +164,9 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
         } else {
             int colorActual = getColor(player);
             int colorRival = getColor(opposite(player));
+            System.out.println(player);
+            System.out.println(colorActual);
+            System.out.println(colorRival);
             for (int i = 0; i < n; i++) {
                 Point p = new Point(i, 0);
                 if(s.getPos(i, 0) == colorActual) {
