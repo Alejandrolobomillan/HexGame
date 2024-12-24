@@ -154,7 +154,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                 if(s.getPos(0, j) == colorActual) {
                     distancias[0][j] = (new Node(p, 0));
                     cola.add(distancias[0][j]);
-                } else if(s.getPos(0, j) == colorRival) {
+                } else if(s.getPos(0, j) == colorRival) { // ESTE ELSE NO HACE NADA MIERDON HISTORICO
                     distancias[0][j] = (new Node(p, Integer.MAX_VALUE)); 
                 } else {
                     distancias[0][j] = (new Node(p, 1));
@@ -173,6 +173,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                 visited.add(current);
 
                 if (p.x == n-1) {
+                    System.out.println(current.distancia);
                     return current.distancia;
                 }
 
@@ -199,12 +200,13 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
             for (int i = 0; i < n; i++) {
                 Point p = new Point(i, 0);
                 if(s.getPos(i, 0) == colorActual) {
-                    distancias[i][0] = (new Node(p, 0));
+                    distancias[i][0].setDistancia(0);
                     cola.add(distancias[i][0]);
                 } else if(s.getPos(1, 0) == colorRival) {
-                    distancias[i][0] = (new Node(p, Integer.MAX_VALUE)); 
+                    distancias[i][0].setDistancia(Integer.MAX_VALUE);
                 } else {
-                    distancias[i][0] = (new Node(p, 1));
+                    // COMPROBAR SI HACE PUENTE EN LA PRIMERA FILA
+                    distancias[i][0].setDistancia(1);
                     cola.add(distancias[i][0]);
                 }
             }
@@ -229,8 +231,21 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                             int newDist = 0;
                             if(s.getPos(neighbor.x, neighbor.y) == colorActual) {
                                 newDist = distancias[p.x][p.y].distancia;
-                            } else {
-                                newDist = distancias[p.x][p.y].distancia + 1;
+                            }
+                            else {
+                                int suma = 0;
+                                for (int it = 0; it < distancias[neighbor.x][neighbor.y].ponts.size();++it){
+                                    System.out.println("PUNTO :" + distancias[neighbor.x][neighbor.y].ponts.get(it));
+                                    Point pp = distancias[neighbor.x][neighbor.y].getPont(it);
+                                    if (s.getPos(pp) == colorActual){  // Hace puente con una de mis fichas
+                                       suma = 1;
+                                       it = 1000;
+                                    }
+                                    else suma = 2;
+                                }
+                                
+                                newDist = distancias[p.x][p.y].distancia + suma;
+                                    
                             }
                             if (newDist < distancias[neighbor.x][neighbor.y].distancia) {
                                 distancias[neighbor.x][neighbor.y].distancia = newDist;
@@ -256,6 +271,13 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
         
         public void setPonts(List<Point> ponts) {
             this.ponts = new ArrayList<>(ponts); 
+        }
+        
+        public Point getPont(int i){
+            return this.ponts.get(i);
+        }
+        public void setDistancia(int distancia){
+            this.distancia = distancia;
         }
 
     }
