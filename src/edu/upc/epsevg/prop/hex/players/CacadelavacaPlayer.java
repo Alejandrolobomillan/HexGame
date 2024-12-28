@@ -119,26 +119,31 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                 }
                 ii = i+2;
                 jj = j-1;
+                pont = new Point(ii, jj);
                 if((ii >= 0 && ii < n) && (jj >= 0 && jj < n)) {
                     nouPonts.add(pont);
                 }
                 ii = i+1;
                 jj = j+1;
+                pont = new Point(ii, jj);
                 if((ii >= 0 && ii < n) && (jj >= 0 && jj < n)) {
                     nouPonts.add(pont);
                 }
                 ii = i-1;
                 jj = j-2;
+                pont = new Point(ii, jj);
                 if((ii >= 0 && ii < n) && (jj >= 0 && jj < n)) {
                     nouPonts.add(pont);
                 }
                 ii = i-2;
                 jj = j+1;
+                pont = new Point(ii, jj);
                 if((ii >= 0 && ii < n) && (jj >= 0 && jj < n)) {
                     nouPonts.add(pont);
                 }
                 ii = i-1;
                 jj = j-1;
+                pont = new Point(ii, jj);
                 if((ii >= 0 && ii < n) && (jj >= 0 && jj < n)) {
                     nouPonts.add(pont);
                 }
@@ -237,6 +242,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                                 for (int it = 0; it < distancias[neighbor.x][neighbor.y].ponts.size();++it){
                                     System.out.println("PUNTO :" + distancias[neighbor.x][neighbor.y].ponts.get(it));
                                     Point pp = distancias[neighbor.x][neighbor.y].getPont(it);
+                                    System.out.println("PUNTO :" + pp);
                                     if (s.getPos(pp) == colorActual){  // Hace puente con una de mis fichas
                                        suma = 1;
                                        it = 1000;
