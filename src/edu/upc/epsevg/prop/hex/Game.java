@@ -26,13 +26,13 @@ public class Game {
             @Override
             public void run() {
                 
-                IPlayer player1 = new H_E_X_Player(2/*GB*/);
+                IPlayer player1 = new H_E_X_Player(4/*GB*/);
                 
                 IPlayer player2 = new HumanPlayer("Human");
                 
                 IPlayer player3 = new CacadelavacaPlayer("caca");
                                 
-                new Board(player2, player3, 5 /*mida*/,  10/*s*/, false);
+                new Board(player3, player1, 11 /*mida*/,  10/*s*/, false);
              }
         });
     }

@@ -95,7 +95,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
         heuristicasCalculadas++;
         int puntuacioActual = dijkstra(s, jugadorActual);
         int puntuacioRival = dijkstra(s, opposite(jugadorActual));
-        System.out.println(puntuacioActual);
+        //System.out.println(puntuacioActual);
         return (mes_infinit - puntuacioActual) - (mes_infinit - puntuacioRival);
     }
     
@@ -157,12 +157,12 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
             for (int j = 0; j < n; j++) {
                 Point p = new Point(0, j);
                 if(s.getPos(0, j) == colorActual) {
-                    distancias[0][j] = (new Node(p, 0));
+                    distancias[0][j].setDistancia(0);
                     cola.add(distancias[0][j]);
                 } else if(s.getPos(0, j) == colorRival) { // ESTE ELSE NO HACE NADA MIERDON HISTORICO
-                    distancias[0][j] = (new Node(p, Integer.MAX_VALUE)); 
+                    distancias[0][j].setDistancia(Integer.MAX_VALUE); 
                 } else {
-                    distancias[0][j] = (new Node(p, 1));
+                    distancias[0][j].setDistancia(2);
                     cola.add(distancias[0][j]);
                 }
             }
@@ -178,7 +178,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                 visited.add(current);
 
                 if (p.x == n-1) {
-                    System.out.println(current.distancia);
+                    //System.out.println(current.distancia);
                     return current.distancia;
                 }
 
@@ -188,8 +188,18 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                             int newDist = 0;
                             if(s.getPos(neighbor.x, neighbor.y) == colorActual) {
                                 newDist = distancias[p.x][p.y].distancia;
-                            } else {
-                                newDist = distancias[p.x][p.y].distancia + 1;
+                            } 
+                            else {
+                                int suma = 0;
+                                for (int it = 0; it < distancias[neighbor.x][neighbor.y].ponts.size();++it){
+                                    Point pp = distancias[neighbor.x][neighbor.y].getPont(it);
+                                    if (s.getPos(pp) == colorActual){  
+                                       suma = 1;
+                                       it = 1000;
+                                    }
+                                    else suma = 2;
+                                }
+                                newDist = distancias[p.x][p.y].distancia + suma; 
                             }
                             if (newDist < distancias[neighbor.x][neighbor.y].distancia) {
                                 distancias[neighbor.x][neighbor.y].distancia = newDist;
@@ -207,11 +217,11 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                 if(s.getPos(i, 0) == colorActual) {
                     distancias[i][0].setDistancia(0);
                     cola.add(distancias[i][0]);
-                } else if(s.getPos(1, 0) == colorRival) {
+                } else if(s.getPos(i, 0) == colorRival) {
                     distancias[i][0].setDistancia(Integer.MAX_VALUE);
                 } else {
                     // COMPROBAR SI HACE PUENTE EN LA PRIMERA FILA
-                    distancias[i][0].setDistancia(1);
+                    distancias[i][0].setDistancia(2);
                     cola.add(distancias[i][0]);
                 }
             }
@@ -240,18 +250,14 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                             else {
                                 int suma = 0;
                                 for (int it = 0; it < distancias[neighbor.x][neighbor.y].ponts.size();++it){
-                                    System.out.println("PUNTO :" + distancias[neighbor.x][neighbor.y].ponts.get(it));
                                     Point pp = distancias[neighbor.x][neighbor.y].getPont(it);
-                                    System.out.println("PUNTO :" + pp);
-                                    if (s.getPos(pp) == colorActual){  // Hace puente con una de mis fichas
+                                    if (s.getPos(pp) == colorActual){  
                                        suma = 1;
                                        it = 1000;
                                     }
                                     else suma = 2;
                                 }
-                                
-                                newDist = distancias[p.x][p.y].distancia + suma;
-                                    
+                                newDist = distancias[p.x][p.y].distancia + suma;     
                             }
                             if (newDist < distancias[neighbor.x][neighbor.y].distancia) {
                                 distancias[neighbor.x][neighbor.y].distancia = newDist;
