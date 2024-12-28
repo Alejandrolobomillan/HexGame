@@ -181,25 +181,25 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                     //System.out.println(current.distancia);
                     return current.distancia;
                 }
-
+                
+                if(s.getPos(p) != colorRival) {
+                    for (int it = 0; it < distancias[p.x][p.y].ponts.size();++it){
+                        Point pp = distancias[p.x][p.y].getPont(it);
+                        if (s.getPos(pp) == colorActual){  
+                            distancias[p.x][p.y].distancia = distancias[p.x][p.y].distancia-1;
+                            it = 1000;
+                        } 
+                    }
+                }
+                
                 for (Point neighbor : s.getNeigh(p)) {
                     if(s.getPos(neighbor.x, neighbor.y) != colorRival) {
                         if (!visited.contains(distancias[neighbor.x][neighbor.y])) {
                             int newDist = 0;
                             if(s.getPos(neighbor.x, neighbor.y) == colorActual) {
                                 newDist = distancias[p.x][p.y].distancia;
-                            } 
-                            else {
-                                int suma = 0;
-                                for (int it = 0; it < distancias[neighbor.x][neighbor.y].ponts.size();++it){
-                                    Point pp = distancias[neighbor.x][neighbor.y].getPont(it);
-                                    if (s.getPos(pp) == colorActual){  
-                                       suma = 1;
-                                       it = 1000;
-                                    }
-                                    else suma = 2;
-                                }
-                                newDist = distancias[p.x][p.y].distancia + suma; 
+                            } else {
+                                newDist = distancias[p.x][p.y].distancia+2; 
                             }
                             if (newDist < distancias[neighbor.x][neighbor.y].distancia) {
                                 distancias[neighbor.x][neighbor.y].distancia = newDist;
@@ -227,6 +227,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
             }
 
             while (!cola.isEmpty()) {
+                //System.out.println(cola.size());
                 Node current = cola.poll();
                 Point p = current.punt;
 
@@ -239,25 +240,25 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                 if (p.y == n-1) {
                     return current.distancia;
                 }
-
-                for (Point neighbor : s.getNeigh(p)) {
+                
+                if(s.getPos(p) != colorRival) {
+                    for (int it = 0; it < distancias[p.x][p.y].ponts.size();++it){
+                        Point pp = distancias[p.x][p.y].getPont(it);
+                        if (s.getPos(pp) == colorActual){  
+                            distancias[p.x][p.y].distancia = distancias[p.x][p.y].distancia-1;
+                            it = 1000;
+                        } 
+                    }
+                }
+                
+                 for (Point neighbor : s.getNeigh(p)) {
                     if(s.getPos(neighbor.x, neighbor.y) != colorRival) {
                         if (!visited.contains(distancias[neighbor.x][neighbor.y])) {
                             int newDist = 0;
                             if(s.getPos(neighbor.x, neighbor.y) == colorActual) {
                                 newDist = distancias[p.x][p.y].distancia;
-                            }
-                            else {
-                                int suma = 0;
-                                for (int it = 0; it < distancias[neighbor.x][neighbor.y].ponts.size();++it){
-                                    Point pp = distancias[neighbor.x][neighbor.y].getPont(it);
-                                    if (s.getPos(pp) == colorActual){  
-                                       suma = 1;
-                                       it = 1000;
-                                    }
-                                    else suma = 2;
-                                }
-                                newDist = distancias[p.x][p.y].distancia + suma;     
+                            } else {
+                                newDist = distancias[p.x][p.y].distancia+2;     
                             }
                             if (newDist < distancias[neighbor.x][neighbor.y].distancia) {
                                 distancias[neighbor.x][neighbor.y].distancia = newDist;
