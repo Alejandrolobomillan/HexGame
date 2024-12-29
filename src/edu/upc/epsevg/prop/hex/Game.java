@@ -31,6 +31,8 @@ public class Game {
                 IPlayer player2 = new HumanPlayer("Human");
                 
                 IPlayer player3 = new CacadelavacaPlayer("caca");
+                
+                IPlayer player4 = new RandomPlayer("pedro");
                                 
                 new Board(player3, player1, 11 /*mida*/,  10/*s*/, false);
              }

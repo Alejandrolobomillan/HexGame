@@ -105,171 +105,95 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
         Node[][] distancias = new Node[n][n];
         PriorityQueue<Node> cola = new PriorityQueue<>(Comparator.comparingInt(node -> node.distancia));
         Set<Node> visited = new HashSet<>();
-        
+        int colorActual = getColor(player);
+        int colorRival = getColor(opposite(player));
+
+        // Inicialización de distancias
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 Point p = new Point(i, j);
-                distancias[i][j] = (new Node(p, Integer.MAX_VALUE));      
-                int ii = i+1;
-                int jj = j-2;
-                Point pont = new Point(ii, jj);
-                List<Point> nouPonts = new ArrayList<>();
-                if((ii >= 0 && ii < n) && (jj >= 0 && jj < n)) {
-                    nouPonts.add(pont);
-                }
-                ii = i+2;
-                jj = j-1;
-                pont = new Point(ii, jj);
-                if((ii >= 0 && ii < n) && (jj >= 0 && jj < n)) {
-                    nouPonts.add(pont);
-                }
-                ii = i+1;
-                jj = j+1;
-                pont = new Point(ii, jj);
-                if((ii >= 0 && ii < n) && (jj >= 0 && jj < n)) {
-                    nouPonts.add(pont);
-                }
-                ii = i-1;
-                jj = j-2;
-                pont = new Point(ii, jj);
-                if((ii >= 0 && ii < n) && (jj >= 0 && jj < n)) {
-                    nouPonts.add(pont);
-                }
-                ii = i-2;
-                jj = j+1;
-                pont = new Point(ii, jj);
-                if((ii >= 0 && ii < n) && (jj >= 0 && jj < n)) {
-                    nouPonts.add(pont);
-                }
-                ii = i-1;
-                jj = j-1;
-                pont = new Point(ii, jj);
-                if((ii >= 0 && ii < n) && (jj >= 0 && jj < n)) {
-                    nouPonts.add(pont);
-                }
-                distancias[i][j].setPonts(nouPonts);
+                distancias[i][j] = new Node(p, Integer.MAX_VALUE);
+                distancias[i][j].setPonts(generateBridges(p, n));
             }
         }
-        
-        if(player == PLAYER1) {
-            int colorActual = getColor(player);
-            int colorRival = getColor(opposite(player));
+
+        // Inicialización de puntos iniciales según el jugador
+        if (player == PLAYER1) {
             for (int j = 0; j < n; j++) {
                 Point p = new Point(0, j);
-                if(s.getPos(0, j) == colorActual) {
+                if (s.getPos(0, j) == colorActual) {
                     distancias[0][j].setDistancia(0);
                     cola.add(distancias[0][j]);
-                } else if(s.getPos(0, j) == colorRival) { // ESTE ELSE NO HACE NADA MIERDON HISTORICO
-                    distancias[0][j].setDistancia(Integer.MAX_VALUE); 
+                } else if (s.getPos(0, j) == colorRival) {
+                    distancias[0][j].setDistancia(Integer.MAX_VALUE);
                 } else {
                     distancias[0][j].setDistancia(2);
                     cola.add(distancias[0][j]);
                 }
             }
-       
-            while (!cola.isEmpty()) {
-                Node current = cola.poll();
-                Point p = current.punt;
-
-                if (visited.contains(current)) {
-                    continue;
-                }
-
-                visited.add(current);
-
-                if (p.x == n-1) {
-                    //System.out.println(current.distancia);
-                    return current.distancia;
-                }
-
-                for (Point neighbor : s.getNeigh(p)) {
-                    if(s.getPos(neighbor.x, neighbor.y) != colorRival) {
-                        if (!visited.contains(distancias[neighbor.x][neighbor.y])) {
-                            int newDist = 0;
-                            if(s.getPos(neighbor.x, neighbor.y) == colorActual) {
-                                newDist = distancias[p.x][p.y].distancia;
-                            } 
-                            else {
-                                int suma = 0;
-                                for (int it = 0; it < distancias[neighbor.x][neighbor.y].ponts.size();++it){
-                                    Point pp = distancias[neighbor.x][neighbor.y].getPont(it);
-                                    if (s.getPos(pp) == colorActual){  
-                                       suma = 1;
-                                       it = 1000;
-                                    }
-                                    else suma = 2;
-                                }
-                                newDist = distancias[p.x][p.y].distancia + suma; 
-                            }
-                            if (newDist < distancias[neighbor.x][neighbor.y].distancia) {
-                                distancias[neighbor.x][neighbor.y].distancia = newDist;
-                                cola.add(new Node(neighbor, newDist));
-                            }
-                        }
-                    }
-                }
-            }           
         } else {
-            int colorActual = getColor(player);
-            int colorRival = getColor(opposite(player));
             for (int i = 0; i < n; i++) {
                 Point p = new Point(i, 0);
-                if(s.getPos(i, 0) == colorActual) {
+                if (s.getPos(i, 0) == colorActual) {
                     distancias[i][0].setDistancia(0);
                     cola.add(distancias[i][0]);
-                } else if(s.getPos(i, 0) == colorRival) {
+                } else if (s.getPos(i, 0) == colorRival) {
                     distancias[i][0].setDistancia(Integer.MAX_VALUE);
                 } else {
-                    // COMPROBAR SI HACE PUENTE EN LA PRIMERA FILA
                     distancias[i][0].setDistancia(2);
                     cola.add(distancias[i][0]);
                 }
             }
+        }
 
-            while (!cola.isEmpty()) {
-                Node current = cola.poll();
-                Point p = current.punt;
+        // Algoritmo principal
+        while (!cola.isEmpty()) {
+            Node current = cola.poll();
+            Point p = current.punt;
 
-                if (visited.contains(current)) {
-                    continue;
-                }
+            if (visited.contains(current)) continue;
+            visited.add(current);
 
-                visited.add(current);
+            if ((player == PLAYER1 && p.x == n - 1) || (player == PLAYER2 && p.y == n - 1)) {
+                return current.distancia;
+            }
 
-                if (p.y == n-1) {
-                    return current.distancia;
-                }
-
-                for (Point neighbor : s.getNeigh(p)) {
-                    if(s.getPos(neighbor.x, neighbor.y) != colorRival) {
-                        if (!visited.contains(distancias[neighbor.x][neighbor.y])) {
-                            int newDist = 0;
-                            if(s.getPos(neighbor.x, neighbor.y) == colorActual) {
-                                newDist = distancias[p.x][p.y].distancia;
-                            }
-                            else {
-                                int suma = 0;
-                                for (int it = 0; it < distancias[neighbor.x][neighbor.y].ponts.size();++it){
-                                    Point pp = distancias[neighbor.x][neighbor.y].getPont(it);
-                                    if (s.getPos(pp) == colorActual){  
-                                       suma = 1;
-                                       it = 1000;
-                                    }
-                                    else suma = 2;
-                                }
-                                newDist = distancias[p.x][p.y].distancia + suma;     
-                            }
-                            if (newDist < distancias[neighbor.x][neighbor.y].distancia) {
-                                distancias[neighbor.x][neighbor.y].distancia = newDist;
-                                cola.add(new Node(neighbor, newDist));
-                            }
-                        }
+            for (Point neighbor : s.getNeigh(p)) {
+                if (s.getPos(neighbor.x, neighbor.y) != colorRival) {
+                    int puenteBonus = calculateBridgeBonus(neighbor, distancias, s, colorActual);
+                    int newDist = distancias[p.x][p.y].distancia + (s.getPos(neighbor.x, neighbor.y) == colorActual ? 0 : 2 - puenteBonus);
+                    if (newDist < distancias[neighbor.x][neighbor.y].distancia) {
+                        distancias[neighbor.x][neighbor.y].setDistancia(newDist);
+                        cola.add(new Node(neighbor, newDist));
                     }
                 }
-            }   
+            }
         }
-        return Integer.MAX_VALUE; 
+        return Integer.MAX_VALUE;
+}
+
+private static List<Point> generateBridges(Point p, int n) {
+    List<Point> bridges = new ArrayList<>();
+    int[][] offsets = {{1, -2}, {2, -1}, {1, 1}, {-1, -2}, {-2, 1}, {-1, 1}};
+    for (int[] offset : offsets) {
+        int x = p.x + offset[0];
+        int y = p.y + offset[1];
+        if (x >= 0 && x < n && y >= 0 && y < n) {
+            bridges.add(new Point(x, y));
+        }
     }
+    return bridges;
+}
+
+private static int calculateBridgeBonus(Point neighbor, Node[][] distancias, HexGameStatus s, int colorActual) {
+    for (Point bridge : distancias[neighbor.x][neighbor.y].ponts) {
+        if (s.getPos(bridge.x, bridge.y) == colorActual) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
  
     private static class Node {
         Point punt;
