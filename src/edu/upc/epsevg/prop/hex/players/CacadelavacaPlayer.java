@@ -154,7 +154,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
             }
             
             if(s.getPos(p) == colorActual) {
-                int puenteBonus = calculateBridgeBonus(p, distancias, s, colorActual);
+                int puenteBonus = calculateBridgeBonus(p, distancias, s, colorActual, colorRival);
                 distancias[p.x][p.y].distancia = distancias[p.x][p.y].distancia - puenteBonus;
             }
 
@@ -184,14 +184,46 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
         return bridges;
     }
 
-    private static int calculateBridgeBonus(Point p, Node[][] distancias, HexGameStatus s, int colorActual) {
+    private static int calculateBridgeBonus(Point p, Node[][] distancias, HexGameStatus s, int colorActual, int colorRival) {
+
         for (Point bridge : distancias[p.x][p.y].ponts) {
+            List<Point> pNeigh = s.getNeigh(p);
+            List<Point> bridgeNeigh = s.getNeigh(bridge);
+
+            List<Point> comunes = new ArrayList<>();
+            for (Point pn : pNeigh) {
+                if (bridgeNeigh.contains(pn)) {
+                    comunes.add(pn);
+                }
+            }
+            
+            if (comunes.size() == 2) {
+                Point common1 = comunes.get(0);
+                Point common2 = comunes.get(1);
+
+                if (s.getPos(common1.x, common1.y) == colorActual || s.getPos(common2.x, common2.y) == colorActual) {
+                    return -1; 
+                }
+
+                if (s.getPos(common1.x, common1.y) == colorRival || s.getPos(common2.x, common2.y) == colorRival) {
+                    for (Point bridgeNeighPoint : bridgeNeigh) {
+                        if (!bridgeNeighPoint.equals(common1) && !bridgeNeighPoint.equals(common2) && !bridgeNeighPoint.equals(p)) {
+                            if (s.getPos(bridgeNeighPoint.x, bridgeNeighPoint.y) == colorRival) {
+                                distancias[bridgeNeighPoint.x][bridgeNeighPoint.y].distancia = distancias[bridgeNeighPoint.x][bridgeNeighPoint.y].distancia+5;
+                            }
+                        }
+                    }
+                }
+            }
+            
             if (s.getPos(bridge.x, bridge.y) == colorActual) {
                 return 1;
-            } 
+            }
         }
-        return 0;
+
+        return 0; // No se encontró un puente válido
     }
+
 
     private static class Node {
         Point punt;
