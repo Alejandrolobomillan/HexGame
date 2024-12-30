@@ -117,7 +117,6 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
         
         if (player == PLAYER1) {
             for (int j = 0; j < n; j++) {
-                Point p = new Point(0, j);
                 if (s.getPos(0, j) == colorActual) {
                     distancias[0][j].setDistancia(0);
                     cola.add(distancias[0][j]);
@@ -128,9 +127,11 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                     cola.add(distancias[0][j]);
                 }
             }
+            
+            distancias[1][9].setDistancia(0);
+            cola.add(distancias[1][9]);
         } else {
             for (int i = 0; i < n; i++) {
-                Point p = new Point(i, 0);
                 if (s.getPos(i, 0) == colorActual) {
                     distancias[i][0].setDistancia(0);
                     cola.add(distancias[i][0]);
@@ -141,6 +142,8 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                     cola.add(distancias[i][0]);
                 }
             }
+            distancias[9][1].setDistancia(0);
+            cola.add(distancias[9][1]);
         }
 
         while (!cola.isEmpty()) {
@@ -153,14 +156,14 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                 return current.distancia;
             }
             
-            if(s.getPos(p) == colorActual) {
-                int puenteBonus = calculateBridgeBonus(p, distancias, s, colorActual);
-                distancias[p.x][p.y].distancia = distancias[p.x][p.y].distancia - puenteBonus;
-            }
+            
 
             for (Point neighbor : s.getNeigh(p)) {
+                int bonus = 0;
+                if ( s.getPos(p)== colorActual)bonus = intermediasBonus(current,neighbor,s,colorActual,colorRival);
                 if (s.getPos(neighbor.x, neighbor.y) != colorRival) {
-                    int newDist = distancias[p.x][p.y].distancia + (s.getPos(neighbor.x, neighbor.y) == colorActual ? 0 : 2);
+                    int newDist = distancias[p.x][p.y].distancia + (s.getPos(neighbor.x, neighbor.y) == colorActual ? 0 : (2 - bonus));
+                    // if (bonus == 1) System.out.println("BONUS ACTIVADO, SOY EL PUNTO: " + p + "Y MI DISTANCIA ES: " + distancias[p.x][p.y].distancia + "NEWDIST: " + newDist + "y la del vecino es : " + distancias[neighbor.x][neighbor.y].distancia);
                     if (newDist < distancias[neighbor.x][neighbor.y].distancia) {
                         distancias[neighbor.x][neighbor.y].setDistancia(newDist);
                         cola.add(distancias[neighbor.x][neighbor.y]);
@@ -182,6 +185,40 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
             }
         }
         return bridges;
+    }
+    
+    private static int intermediasBonus(Node n, Point neighbor, HexGameStatus s, int colorActual, int colorRival){
+    
+        int bonus = 0;
+        for (Point bridge : n.ponts) {
+          if (s.getPos(bridge.x, bridge.y) == colorActual) {
+              List<Point> intermedias = getIntermedias(n.punt, bridge,s);
+              if ( intermedias.contains(neighbor)) bonus = 1;
+              if ( bonus == 1){
+                for ( Point inter : intermedias){
+                    if (s.getPos(inter) == colorActual || s.getPos(inter) == colorRival){
+                        bonus = 0;
+                    }   
+                }
+              }  
+          }  
+        }
+        
+        return bonus;
+        
+    }
+    
+    private static List<Point> getIntermedias(Point p, Point bridge, HexGameStatus s){
+        
+        List<Point> pNeigh = s.getNeigh(p);
+        List<Point> bridgeNeigh = s.getNeigh(bridge);
+        List<Point> comunes = new ArrayList<>();
+        for (Point pn : pNeigh) {
+            if (bridgeNeigh.contains(pn)) {
+                comunes.add(pn);
+            }
+        }
+        return comunes;
     }
 
     private static int calculateBridgeBonus(Point p, Node[][] distancias, HexGameStatus s, int colorActual) {

@@ -10,6 +10,7 @@ import edu.upc.epsevg.prop.hex.players.CacadelavacaPlayer;
 
 
 
+
 import javax.swing.SwingUtilities;
 
 /**
@@ -33,6 +34,7 @@ public class Game {
                 IPlayer player3 = new CacadelavacaPlayer("caca");
                 
                 IPlayer player4 = new RandomPlayer("pedro");
+              
                                 
                 new Board(player1, player3, 11 /*mida*/,  10/*s*/, false);
              }
