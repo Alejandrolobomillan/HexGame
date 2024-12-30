@@ -95,7 +95,6 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
         heuristicasCalculadas++;
         int puntuacioActual = dijkstra(s, jugadorActual);
         int puntuacioRival = dijkstra(s, opposite(jugadorActual));
-        //System.out.println(puntuacioActual);
         return (mes_infinit - puntuacioActual) - (mes_infinit - puntuacioRival);
     }
     
@@ -108,7 +107,6 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
         int colorActual = getColor(player);
         int colorRival = getColor(opposite(player));
 
-        // Inicialización de distancias
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 Point p = new Point(i, j);
@@ -116,8 +114,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                 distancias[i][j].setPonts(generateBridges(p, n));
             }
         }
-
-        // Inicialización de puntos iniciales según el jugador
+        
         if (player == PLAYER1) {
             for (int j = 0; j < n; j++) {
                 Point p = new Point(0, j);
@@ -127,7 +124,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                 } else if (s.getPos(0, j) == colorRival) {
                     distancias[0][j].setDistancia(Integer.MAX_VALUE);
                 } else {
-                    distancias[0][j].setDistancia(2);
+                    distancias[0][j].setDistancia(1);
                     cola.add(distancias[0][j]);
                 }
             }
@@ -140,61 +137,62 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                 } else if (s.getPos(i, 0) == colorRival) {
                     distancias[i][0].setDistancia(Integer.MAX_VALUE);
                 } else {
-                    distancias[i][0].setDistancia(2);
+                    distancias[i][0].setDistancia(1);
                     cola.add(distancias[i][0]);
                 }
             }
         }
 
-        // Algoritmo principal
         while (!cola.isEmpty()) {
             Node current = cola.poll();
             Point p = current.punt;
-
             if (visited.contains(current)) continue;
             visited.add(current);
 
             if ((player == PLAYER1 && p.x == n - 1) || (player == PLAYER2 && p.y == n - 1)) {
                 return current.distancia;
             }
+            
+            if(s.getPos(p) == colorActual) {
+                int puenteBonus = calculateBridgeBonus(p, distancias, s, colorActual);
+                distancias[p.x][p.y].distancia = distancias[p.x][p.y].distancia - puenteBonus;
+            }
 
             for (Point neighbor : s.getNeigh(p)) {
                 if (s.getPos(neighbor.x, neighbor.y) != colorRival) {
-                    int puenteBonus = calculateBridgeBonus(neighbor, distancias, s, colorActual);
-                    int newDist = distancias[p.x][p.y].distancia + (s.getPos(neighbor.x, neighbor.y) == colorActual ? 0 : 2 - puenteBonus);
+                    int newDist = distancias[p.x][p.y].distancia + (s.getPos(neighbor.x, neighbor.y) == colorActual ? 0 : 2);
                     if (newDist < distancias[neighbor.x][neighbor.y].distancia) {
                         distancias[neighbor.x][neighbor.y].setDistancia(newDist);
-                        cola.add(new Node(neighbor, newDist));
+                        cola.add(distancias[neighbor.x][neighbor.y]);
                     }
                 }
             }
         }
         return Integer.MAX_VALUE;
-}
-
-private static List<Point> generateBridges(Point p, int n) {
-    List<Point> bridges = new ArrayList<>();
-    int[][] offsets = {{1, -2}, {2, -1}, {1, 1}, {-1, -2}, {-2, 1}, {-1, 1}};
-    for (int[] offset : offsets) {
-        int x = p.x + offset[0];
-        int y = p.y + offset[1];
-        if (x >= 0 && x < n && y >= 0 && y < n) {
-            bridges.add(new Point(x, y));
-        }
     }
-    return bridges;
-}
 
-private static int calculateBridgeBonus(Point neighbor, Node[][] distancias, HexGameStatus s, int colorActual) {
-    for (Point bridge : distancias[neighbor.x][neighbor.y].ponts) {
-        if (s.getPos(bridge.x, bridge.y) == colorActual) {
-            return 1;
+    private static List<Point> generateBridges(Point p, int n) {
+        List<Point> bridges = new ArrayList<>();
+        int[][] offsets = {{1, -2}, {2, -1}, {1, 1}, {-1, -2}, {-2, 1}, {-1, 1}};
+        for (int[] offset : offsets) {
+            int x = p.x + offset[0];
+            int y = p.y + offset[1];
+            if (x >= 0 && x < n && y >= 0 && y < n) {
+                bridges.add(new Point(x, y));
+            }
         }
+        return bridges;
     }
-    return 0;
-}
 
- 
+    private static int calculateBridgeBonus(Point p, Node[][] distancias, HexGameStatus s, int colorActual) {
+        for (Point bridge : distancias[p.x][p.y].ponts) {
+            if (s.getPos(bridge.x, bridge.y) == colorActual) {
+                return 1;
+            } 
+        }
+        return 0;
+    }
+
     private static class Node {
         Point punt;
         int distancia;
