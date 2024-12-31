@@ -17,9 +17,13 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
     private final int mes_infinit = Integer.MAX_VALUE;
     private final int menys_infinit = Integer.MIN_VALUE;
     private long heuristicasCalculadas = 0;
+    private boolean flag = false;
+    private int prof_noIDS = 0;
 
-    public CacadelavacaPlayer(String name) {
-        nom = "Cacadelavaca";
+    public CacadelavacaPlayer(String name,boolean b, int p) {
+        this.nom = "Cacadelavaca";
+        this.flag = b;
+        this.prof_noIDS = p;
     }
 
     @Override
@@ -34,29 +38,54 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
         int profunditat = 1;
         Point millorMoviment =  null;
         int alpha = menys_infinit;
-        while (!timeOut) {
-            for(MoveNode move : s.getMoves()) {
-                if (millorMoviment == null) millorMoviment = move.getPoint();
-                HexGameStatus copiaStatus = new HexGameStatus(s);  
-                copiaStatus.placeStone(move.getPoint()); 
-                if (copiaStatus.isGameOver()) {  
-                    return new PlayerMove(move.getPoint(), heuristicasCalculadas, profunditat, SearchType.MINIMAX_IDS);  
-                }
-                int valor = MinValor(copiaStatus, profunditat, menys_infinit, mes_infinit);  
+        long startTime = System.currentTimeMillis();
+        if(flag){
+            while (!timeOut) {
+                for(MoveNode move : s.getMoves()) {
+                    if (millorMoviment == null) millorMoviment = move.getPoint();
+                    HexGameStatus copiaStatus = new HexGameStatus(s);  
+                    copiaStatus.placeStone(move.getPoint()); 
+                    if (copiaStatus.isGameOver()) {  
+                        return new PlayerMove(move.getPoint(), heuristicasCalculadas, profunditat, SearchType.MINIMAX_IDS);  
+                    }
+                    int valor = MinValor(copiaStatus, profunditat, menys_infinit, mes_infinit);  
 
-                if (alpha < valor) {
-                    alpha = valor;
-                    millorMoviment = move.getPoint(); 
+                    if (alpha < valor) {
+                        alpha = valor;
+                        millorMoviment = move.getPoint(); 
+                    }
                 }
+                profunditat++;
             }
-            profunditat++;
         }
+        
+        else{
+        
+            profunditat = prof_noIDS;
+            for(MoveNode move : s.getMoves()) {
+                    if (millorMoviment == null) millorMoviment = move.getPoint();
+                    HexGameStatus copiaStatus = new HexGameStatus(s);  
+                    copiaStatus.placeStone(move.getPoint()); 
+                    if (copiaStatus.isGameOver()) {  
+                        return new PlayerMove(move.getPoint(), heuristicasCalculadas, profunditat, SearchType.MINIMAX);  
+                    }
+                    int valor = MinValor(copiaStatus, profunditat, menys_infinit, mes_infinit);  
+
+                    if (alpha < valor) {
+                        alpha = valor;
+                        millorMoviment = move.getPoint(); 
+                    }
+                }
+            
+        }
+        long endTime = System.currentTimeMillis();
+        System.out.println(endTime - startTime);
         if(timeOut) timeout();
         return new PlayerMove(millorMoviment, heuristicasCalculadas, profunditat, SearchType.MINIMAX_IDS);
     }
 
     private int MinValor(HexGameStatus s, int profunditat, int alfa, int beta) {
-        if (profunditat == 0 || timeOut) return heuristica(s);
+        if (profunditat == 0 || (timeOut && flag)) return heuristica(s);
 
         int valor = mes_infinit;
         for(MoveNode move : s.getMoves()) {
@@ -73,7 +102,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
     }
 
     private int MaxValor(HexGameStatus s, int profunditat, int alfa, int beta) {
-        if (profunditat == 0 || timeOut) return heuristica(s);
+        if (profunditat == 0 || (timeOut && flag)) return heuristica(s);
 
         int valor = menys_infinit;
         for(MoveNode move : s.getMoves()) {

@@ -33,11 +33,11 @@ public class HeadlessGame {
                 
                 IPlayer player2 = new HumanPlayer("Human");
                 
-                IPlayer player3 = new CacadelavacaPlayer("caca");
+                //IPlayer player3 = new CacadelavacaPlayer("caca");
                 
                 IPlayer player4 = new RandomPlayer("pedro");                 
         
-        HeadlessGame game = new HeadlessGame(player1, player3, 11, 10/*s timeout*/, 10/*games*/);
+        HeadlessGame game = new HeadlessGame(player1, player1, 11, 10/*s timeout*/, 10/*games*/);
         GameResult gr = game.start();
         System.out.println(gr);
 
