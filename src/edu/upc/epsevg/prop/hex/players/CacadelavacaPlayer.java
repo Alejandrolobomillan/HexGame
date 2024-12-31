@@ -6,10 +6,8 @@ import static edu.upc.epsevg.prop.hex.PlayerType.*;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.Set;
 
 public class CacadelavacaPlayer implements IPlayer, IAuto {
 
@@ -103,7 +101,6 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
         int n = s.getSize();
         Node[][] distancias = new Node[n][n];
         PriorityQueue<Node> cola = new PriorityQueue<>(Comparator.comparingInt(node -> node.distancia));
-        //Set<Node> visited = new HashSet<>();
         boolean[][] visited = new boolean[n][n];
         int colorActual = getColor(player);
         int colorRival = getColor(opposite(player));
@@ -156,20 +153,14 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
             if ((player == PLAYER1 && p.x == n - 1) || (player == PLAYER2 && p.y == n - 1)) {
                 return current.distancia;
             }
-            
-            
 
             for (Point neighbor : s.getNeigh(p)) {
                 int bonus = 0;
                 int penalizacion = 0;
-                
-                if ( s.getPos(p)== colorActual)bonus = intermediasBonus(current,neighbor,s,colorActual,colorRival);
-                else penalizacion = blocked_path(distancias[neighbor.x][neighbor.y],s,colorActual,colorRival,distancias);
-                  
-                    
+                if ( s.getPos(p)== colorActual)bonus = middleBonus(current,neighbor,s,colorActual,colorRival);
+                else penalizacion = middlePenalty(distancias[neighbor.x][neighbor.y],s,colorActual,colorRival,distancias);
                 if (s.getPos(neighbor.x, neighbor.y) != colorRival) {
                     int newDist = distancias[p.x][p.y].distancia + (s.getPos(neighbor.x, neighbor.y) == colorActual ? 0 : (2 - bonus + penalizacion));
-                    // if (bonus == 1) System.out.println("BONUS ACTIVADO, SOY EL PUNTO: " + p + "Y MI DISTANCIA ES: " + distancias[p.x][p.y].distancia + "NEWDIST: " + newDist + "y la del vecino es : " + distancias[neighbor.x][neighbor.y].distancia);
                     if (newDist < distancias[neighbor.x][neighbor.y].distancia) {
                         distancias[neighbor.x][neighbor.y].setDistancia(newDist);
                         cola.add(distancias[neighbor.x][neighbor.y]);
@@ -193,7 +184,7 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
         return bridges;
     }
     
-    private static int blocked_path(Node inter, HexGameStatus s, int colorActual, int colorRival, Node[][] distancias){
+    private static int middlePenalty(Node inter, HexGameStatus s, int colorActual, int colorRival, Node[][] distancias){
         Point intermedio = inter.punt;
         List<Point> enemys = new ArrayList<>();
         List<Point> neighs = s.getNeigh(intermedio);
@@ -209,29 +200,26 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
             List<Point> bridges = distancias[enemy.x][enemy.y].ponts;
             for (Point bridge : bridges){
                 if (enemys.contains(bridge)){
-                    bonus = 1000;// hay un puente del rival
-                    intermedias = getIntermedias(enemy,bridge,s);
+                    bonus = 1000;
+                    intermedias = getMiddle(enemy,bridge,s);
                     break;
                 }  
             }
-            
-            //compruebo si la otra intermedia esta ocupada:
             for ( Point p : intermedias){
                 if ( s.getPos(p) == colorActual || s.getPos(p) == colorRival){
                     bonus = 0;
                 }
             }
         }
-        
         return bonus;
     }
     
-    private static int intermediasBonus(Node n, Point neighbor, HexGameStatus s, int colorActual, int colorRival){
+    private static int middleBonus(Node n, Point neighbor, HexGameStatus s, int colorActual, int colorRival){
     
         int bonus = 0;
         for (Point bridge : n.ponts) {
           if (s.getPos(bridge.x, bridge.y) == colorActual) {
-              List<Point> intermedias = getIntermedias(n.punt, bridge,s);
+              List<Point> intermedias = getMiddle(n.punt, bridge,s);
               if ( intermedias.contains(neighbor)) bonus = 1;
               if ( bonus == 1){
                 for ( Point inter : intermedias){
@@ -241,13 +229,11 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
                 }
               }  
           }  
-        }
-        
+        } 
         return bonus;
-        
     }
     
-    private static List<Point> getIntermedias(Point p, Point bridge, HexGameStatus s){
+    private static List<Point> getMiddle(Point p, Point bridge, HexGameStatus s){
         
         List<Point> pNeigh = s.getNeigh(p);
         List<Point> bridgeNeigh = s.getNeigh(bridge);
@@ -258,15 +244,6 @@ public class CacadelavacaPlayer implements IPlayer, IAuto {
             }
         }
         return comunes;
-    }
-
-    private static int calculateBridgeBonus(Point p, Node[][] distancias, HexGameStatus s, int colorActual) {
-        for (Point bridge : distancias[p.x][p.y].ponts) {
-            if (s.getPos(bridge.x, bridge.y) == colorActual) {
-                return 1;
-            } 
-        }
-        return 0;
     }
 
     private static class Node {
